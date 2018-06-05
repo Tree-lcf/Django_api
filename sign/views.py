@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse,HttpResponseRedirect
+from django.contrib import auth
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
@@ -14,7 +16,9 @@ def login_action(request):
     if request.method == 'POST':
         username = request.POST.get('username', '')
         password = request.POST.get('password', '')
-        if username == 'admin' and password == '123':
+        user = auth.authenticate(username=username, password=password)
+        if user is not None:
+            auth.login(request, user)
             response = HttpResponseRedirect('/event_manage/')
             request.session['user'] = username # 将session
             return response
@@ -24,6 +28,7 @@ def login_action(request):
 # 发布会管理
 
 
+@login_required
 def event_manage(request):
     username = request.session.get('user', '')
     return render(request, "event_manage.html", {'user': username})
